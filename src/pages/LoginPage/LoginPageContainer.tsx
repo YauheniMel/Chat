@@ -7,12 +7,7 @@ import {
 
 import LoginPage from './LoginPage';
 
-const LoginPageContainer: FC<any> = function ({
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  name,
-  createName,
-  login,
-}) {
+const LoginPageContainer: FC<any> = function ({ name, createName, login }) {
   return <LoginPage name={name} createName={createName} login={login} />;
 };
 

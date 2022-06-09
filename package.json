@@ -41,6 +41,7 @@
   },
   "scripts": {
     "start": "node ./server/index.js",
+    "react": "react-scripts start",
     "build": "react-scripts build",
     "server": "nodemon ./server/index.js --prefix client",
     "eject": "react-scripts eject",

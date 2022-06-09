@@ -20,13 +20,11 @@ const HomePageContainer: FC<any> = function ({
   const [newData, setNewData] = useState(null);
   const [newUsers, setNewUsers] = useState(null);
 
-  const socket = io('http://localhost:5000');
+  const socket = io('https://chatting-back.onrender.com');
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('db', (d: any) => setNewData(d));
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('me', (d: any) => {
       const { id: resId, JSON: json } = JSON.parse(d);
 
@@ -48,7 +46,6 @@ const HomePageContainer: FC<any> = function ({
   }, [newData]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('users', (d: any) => setNewUsers(d));
 
     if (newUsers) {
