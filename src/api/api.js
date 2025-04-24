@@ -9,7 +9,7 @@ const requestAPI = {
   },
   sendTouchedMsg(data) {
     return axios.put('/api/touched', data).then((response) => response.data);
-  },
+  }
 };
 
 export default requestAPI;

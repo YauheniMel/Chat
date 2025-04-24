@@ -19,7 +19,7 @@ const ListComponent: React.FC<any> = function ({ data }) {
             maxHeight: 200,
             maxWidth: 410,
             m: 1,
-            '& ul': { padding: 0 },
+            '& ul': { padding: 0 }
           }}
           subheader={<li />}
         >

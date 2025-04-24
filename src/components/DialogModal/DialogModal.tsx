@@ -12,7 +12,7 @@ const DialogModal: React.FC<any> = function ({
   data,
   sendMessage,
   id,
-  users,
+  users
 }) {
   const [addressee, setAddressee] = React.useState<any>();
   const [value, setValue] = React.useState<any | null>(null);
@@ -24,7 +24,7 @@ const DialogModal: React.FC<any> = function ({
       myId: id,
       id: value.id,
       theme: e.target[2].value,
-      content: e.target[3].value,
+      content: e.target[3].value
     });
   }
 
@@ -66,7 +66,7 @@ const DialogModal: React.FC<any> = function ({
               width: 400,
               minHeight: 100,
               padding: 10,
-              margin: '10px',
+              margin: '10px'
             }}
           />
           <DialogActions>

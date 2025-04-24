@@ -1,6 +1,4 @@
-import {
-  AppBar, IconButton, Toolbar, Typography,
-} from '@mui/material';
+import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -16,14 +14,14 @@ const HomePage: FC<any> = function HomePage({
   sendMessage,
   id,
   users,
-  setTouchedMsg,
+  setTouchedMsg
 }) {
   const [alignment, setAlignment] = React.useState('text');
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: string,
+    newAlignment: string
   ) => {
     setAlignment(newAlignment);
   };
@@ -34,7 +32,7 @@ const HomePage: FC<any> = function HomePage({
         const n = elem.received.map((msg: any) => {
           if (
             newData.received.find(
-              (touchedMsg: any) => +touchedMsg.date === +msg.date,
+              (touchedMsg: any) => +touchedMsg.date === +msg.date
             )
           ) {
             // eslint-disable-next-line no-param-reassign
@@ -64,7 +62,7 @@ const HomePage: FC<any> = function HomePage({
       return {
         id: item.id,
         name: item.name,
-        received: item.received,
+        received: item.received
       };
     });
   }

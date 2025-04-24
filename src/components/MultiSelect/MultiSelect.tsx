@@ -11,11 +11,11 @@ const MultiSelect: React.FC<any> = function ({ userName }) {
 
   const handleChange = (event: any) => {
     const {
-      target: { value },
+      target: { value }
     } = event;
     setPersonName(
       // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
+      typeof value === 'string' ? value.split(',') : value
     );
   };
 

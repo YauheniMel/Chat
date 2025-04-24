@@ -9,7 +9,7 @@ import ModalComponent from '../Modal/Modal';
 const NavMessages: React.FC<any> = function ({
   messages = [],
   setTouched,
-  data,
+  data
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [open, setOpen] = React.useState<boolean>();
@@ -32,14 +32,14 @@ const NavMessages: React.FC<any> = function ({
     arr.forEach((item: any) => {
       if (item.received) {
         counter += item.received.filter(
-          (msg: any) => msg.state === 'untouched',
+          (msg: any) => msg.state === 'untouched'
         ).length;
       }
     });
 
     return counter;
   }
-  // eslint-disable-next-line @typescript-eslint/no-shadow
+
   const toggleDrawer = (open: boolean) => () => {
     setIsOpen(open);
   };
@@ -58,10 +58,10 @@ const NavMessages: React.FC<any> = function ({
             <ListItemButton
               style={{
                 backgroundColor: msg.received.find(
-                  (m: any) => m.state === 'untouched',
+                  (m: any) => m.state === 'untouched'
                 )
                   ? '#f4eeee'
-                  : 'none',
+                  : 'none'
               }}
               key={msg.id}
               onClick={handleOpen}

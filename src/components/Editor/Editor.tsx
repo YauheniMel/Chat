@@ -26,7 +26,7 @@ const Editor: FC<any> = function ({ sendMessage, users, id }) {
       myId: id,
       id: ids,
       theme,
-      content: value.replace(/\n/gim, '&'),
+      content: value.replace(/\n/gim, '&')
     });
   }
 

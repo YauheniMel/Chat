@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 import {
   sendMessageThunk,
   setTouchedMsgThunk,
-  getDataAction,
+  getDataAction
 } from '../../redux/reducers/auth-reducer';
 import HomePage from './HomePage';
 
@@ -15,7 +15,7 @@ const HomePageContainer: FC<any> = function ({
   id,
   users,
   setTouchedMsg,
-  getData,
+  getData
 }) {
   const [newData, setNewData] = useState(null);
   const [newUsers, setNewUsers] = useState(null);
@@ -23,10 +23,8 @@ const HomePageContainer: FC<any> = function ({
   const socket = io('http://localhost:5000');
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('db', (d: any) => setNewData(d));
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('me', (d: any) => {
       const { id: resId, JSON: json } = JSON.parse(d);
 
@@ -34,7 +32,7 @@ const HomePageContainer: FC<any> = function ({
         setNewData(json);
       }
     });
-    // eslint-disable-next-line @typescript-eslint/no-shadow
+
     socket.on('addressee', (d: any) => {
       const { id: resId, JSON: json } = JSON.parse(d);
 
@@ -48,7 +46,6 @@ const HomePageContainer: FC<any> = function ({
   }, [newData]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     socket.on('users', (d: any) => setNewUsers(d));
 
     if (newUsers) {
@@ -72,12 +69,12 @@ const mapStateToProps = (state: any) => ({
   name: state.auth.name,
   id: state.auth.id,
   data: state.auth.db,
-  users: state.auth.users,
+  users: state.auth.users
 });
 const mapDispatchToProps = (dispatch: any) => ({
   sendMessage: (data: any) => dispatch(sendMessageThunk(data)),
   setTouchedMsg: (data: any) => dispatch(setTouchedMsgThunk(data)),
-  getData: (data: any) => dispatch(getDataAction(data)),
+  getData: (data: any) => dispatch(getDataAction(data))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomePageContainer);

@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 import React, { FC, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material';
@@ -8,20 +7,20 @@ import HomePageContainer from './pages/HomePage/HomePageContainer';
 import LoginPageContainer from './pages/LoginPage/LoginPageContainer';
 import 'react-toastify/dist/ReactToastify.css';
 
-const App: FC<any> = function ({ isAuth }) {
+const App: FC<any> = ({ isAuth }) => {
   useEffect(() => {}, [isAuth]);
 
   const theme = createTheme({
     palette: {
       primary: {
         main: '#4d1d88',
-        light: '#62727b',
+        light: '#62727b'
       },
       secondary: {
         main: '#f8bbd0',
-        light: '#efebe9',
-      },
-    },
+        light: '#efebe9'
+      }
+    }
   });
   return (
     <div className="App">
@@ -62,7 +61,7 @@ const App: FC<any> = function ({ isAuth }) {
 };
 
 const mapStateToProps = (state: any) => ({
-  isAuth: state.auth.isAuth,
+  isAuth: state.auth.isAuth
 });
 
 export default connect(mapStateToProps)(App);

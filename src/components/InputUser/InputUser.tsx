@@ -8,18 +8,18 @@ const InputUser: React.FC<any> = function ({
   setAddressee,
   setValue,
   value,
-  users,
+  users
 }) {
   const [dialogValue, setDialogValue] = React.useState({
     name: '',
-    id: '',
+    id: ''
   });
 
   return (
     <Autocomplete
       value={value}
       sx={{
-        m: 1,
+        m: 1
       }}
       onChange={(event, newValue) => {
         if (typeof newValue === 'string') {
@@ -28,14 +28,14 @@ const InputUser: React.FC<any> = function ({
             // toggleOpen(true);
             setDialogValue({
               ...dialogValue,
-              name: newValue,
+              name: newValue
             });
           });
         } else if (newValue && newValue.inputValue) {
           // toggleOpen(true);
           setDialogValue({
             ...dialogValue,
-            name: newValue.inputValue,
+            name: newValue.inputValue
           });
         } else {
           setValue(newValue);
@@ -48,7 +48,7 @@ const InputUser: React.FC<any> = function ({
         if (params.inputValue !== '') {
           filtered.push({
             inputValue: params.inputValue,
-            name: `Incorrect "${params.inputValue}"`,
+            name: `Incorrect "${params.inputValue}"`
           });
         }
 
