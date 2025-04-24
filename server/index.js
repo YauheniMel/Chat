@@ -13,10 +13,13 @@ const {
   createUsersTable,
   createMessagesTable
 } = require('./DB/queries');
+const cors = require('cors');
 
 const port = process.env.PORT || 5000;
 
 const app = express();
+
+app.use(cors());
 
 const server = http.createServer(app);
 
@@ -44,7 +47,6 @@ router.put('/api/login', async (req, res) => {
   const { name } = req.body;
 
   try {
-    // eslint-disable-next-line consistent-return
     connection.query('SELECT * FROM users', (err, results) => {
       if (err) throw new Error(err);
 
@@ -398,17 +400,17 @@ router.put('/api/touched', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../', 'public', 'index.html'));
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../', 'public', 'index.html'));
-});
-
 app.use(bodyParser.json());
 
 app.use(router);
+
+app.use(express.static(`${__dirname}./../build`));
+app.use(express.static(`${__dirname}./../build/static/js`));
+app.use(express.static(`${__dirname}./../build/static/css`));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, './../build/index.html'));
+});
 
 server.listen(port, () => {
   connection.query(createUsersTable() + ' ' + createMessagesTable());
