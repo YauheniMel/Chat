@@ -3,10 +3,16 @@ const express = require('express');
 const socketIo = require('socket.io');
 const http = require('http');
 const { Router } = require('express');
-const mysql = require('mysql2');
 const path = require('path');
-const dbService = require('./service-db');
-require('dotenv/config');
+const connection = require('./DB');
+const {
+  createUser,
+  updateListUsers,
+  updateUsers,
+  updateDb,
+  createUsersTable,
+  createMessagesTable
+} = require('./DB/queries');
 
 const port = process.env.PORT || 5000;
 
@@ -29,14 +35,6 @@ app.use(
     extended: true
   })
 );
-
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  multipleStatements: true
-});
 
 app.use(express.static(path.join(__dirname, '../build')));
 
@@ -66,11 +64,7 @@ router.put('/api/login', async (req, res) => {
         arr.push({ name, id });
 
         connection.query(
-          `${dbService.createUser(
-            name,
-            id,
-            JSON.stringify(arr)
-          )}${dbService.updateListUsers(
+          `${createUser(name, id, JSON.stringify(arr))}${updateListUsers(
             JSON.stringify(arr)
           )} SELECT * FROM users`,
           (error) => {
@@ -91,7 +85,7 @@ router.put('/api/login', async (req, res) => {
         );
       } else {
         connection.query(
-          `${dbService.updateUsers(
+          `${updateUsers(
             targetUser.id,
             JSON.stringify(arr)
           )} SELECT * FROM users`,
@@ -222,14 +216,14 @@ router.post('/api/send', async (req, res) => {
         });
 
         const command = arr.map((elem) =>
-          dbService.updateDb(elem.id, elem.addresseeData)
+          updateDb(elem.id, elem.addresseeData)
         );
         const str = command.join('');
         myJSON = JSON.stringify([...myData]);
 
         connection.query(
           `${str}
-          ${dbService.updateDb(myId, myJSON)}`,
+          ${updateDb(myId, myJSON)}`,
           (error) => {
             if (error) throw new Error(error);
 
@@ -351,8 +345,8 @@ router.post('/api/send', async (req, res) => {
         addresseeJSON = JSON.stringify([...addresseeData]);
 
         connection.query(
-          `${dbService.updateDb(id, addresseeJSON)}
-        ${dbService.updateDb(myId, myJSON)}`,
+          `${updateDb(id, addresseeJSON)}
+        ${updateDb(myId, myJSON)}`,
           (error) => {
             if (error) throw new Error(error);
 
@@ -389,19 +383,16 @@ router.post('/api/send', async (req, res) => {
 router.put('/api/touched', async (req, res) => {
   const { JSON, id } = req.body;
   try {
-    connection.query(
-      `${dbService.updateDb(id, JSON)} SELECT * FROM users`,
-      (error) => {
-        if (error) throw new Error(error);
-        connection.query('SELECT * FROM users', (e, r) => {
-          if (e) throw new Error(e);
+    connection.query(`${updateDb(id, JSON)} SELECT * FROM users`, (error) => {
+      if (error) throw new Error(error);
+      connection.query('SELECT * FROM users', (e, r) => {
+        if (e) throw new Error(e);
 
-          const targetUser = r.find((user) => +user.id === +id);
+        const targetUser = r.find((user) => +user.id === +id);
 
-          return res.status(200).json(targetUser.JSON);
-        });
-      }
-    );
+        return res.status(200).json(targetUser.JSON);
+      });
+    });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -420,5 +411,6 @@ app.use(bodyParser.json());
 app.use(router);
 
 server.listen(port, () => {
+  connection.query(createUsersTable() + ' ' + createMessagesTable());
   console.log(`running on port ${port}`);
 });
