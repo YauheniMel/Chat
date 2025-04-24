@@ -3,10 +3,10 @@ const express = require('express');
 const socketIo = require('socket.io');
 const http = require('http');
 const { Router } = require('express');
-// eslint-disable-next-line import/order
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const path = require('path');
 const dbService = require('./service-db');
+require('dotenv/config');
 
 const port = process.env.PORT || 5000;
 
@@ -16,8 +16,8 @@ const server = http.createServer(app);
 
 const io = socketIo(server, {
   cors: {
-    origin: '*',
-  },
+    origin: '*'
+  }
 });
 
 io.on('connection', (socket) => {
@@ -26,16 +26,16 @@ io.on('connection', (socket) => {
 
 app.use(
   bodyParser.urlencoded({
-    extended: true,
-  }),
+    extended: true
+  })
 );
 
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  database: 'usersdb2',
-  password: 'melnik123',
-  multipleStatements: true,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  multipleStatements: true
 });
 
 app.use(express.static(path.join(__dirname, '../build')));
@@ -69,9 +69,9 @@ router.put('/api/login', async (req, res) => {
           `${dbService.createUser(
             name,
             id,
-            JSON.stringify(arr),
+            JSON.stringify(arr)
           )}${dbService.updateListUsers(
-            JSON.stringify(arr),
+            JSON.stringify(arr)
           )} SELECT * FROM users`,
           (error) => {
             if (error) throw new Error(error);
@@ -87,13 +87,13 @@ router.put('/api/login', async (req, res) => {
 
               return res.status(200).json(targetUser);
             });
-          },
+          }
         );
       } else {
         connection.query(
           `${dbService.updateUsers(
             targetUser.id,
-            JSON.stringify(arr),
+            JSON.stringify(arr)
           )} SELECT * FROM users`,
           (error, r) => {
             if (error) throw new Error(error);
@@ -104,7 +104,7 @@ router.put('/api/login', async (req, res) => {
             targetUser = users[1].find((user) => user.name === name);
 
             return res.status(200).json(targetUser);
-          },
+          }
         );
       }
     });
@@ -114,9 +114,7 @@ router.put('/api/login', async (req, res) => {
 });
 
 router.post('/api/send', async (req, res) => {
-  const {
-    id, myId, theme, content,
-  } = req.body;
+  const { id, myId, theme, content } = req.body;
 
   try {
     // eslint-disable-next-line consistent-return
@@ -154,9 +152,9 @@ router.post('/api/send', async (req, res) => {
                   state: 'untouched',
                   theme,
                   content,
-                  md: true,
-                },
-              ],
+                  md: true
+                }
+              ]
             });
           } else {
             if (!myData[n].sent) myData[n].sent = [];
@@ -165,7 +163,7 @@ router.post('/api/send', async (req, res) => {
               state: 'untouched',
               theme,
               content,
-              md: true,
+              md: true
             });
           }
         });
@@ -187,9 +185,9 @@ router.post('/api/send', async (req, res) => {
                   state: 'untouched',
                   theme,
                   content,
-                  md: true,
-                },
-              ],
+                  md: true
+                }
+              ]
             });
           } else {
             if (!addresseeData[idx].received) addresseeData[idx].received = [];
@@ -198,7 +196,7 @@ router.post('/api/send', async (req, res) => {
               state: 'untouched',
               theme,
               content,
-              md: true,
+              md: true
             });
           }
 
@@ -211,19 +209,21 @@ router.post('/api/send', async (req, res) => {
                   state: 'untouched',
                   theme,
                   content,
-                  md: true,
-                },
-              ],
+                  md: true
+                }
+              ]
             });
           }
 
           arr.push({
             id: k,
-            addresseeData: JSON.stringify([...addresseeData]),
+            addresseeData: JSON.stringify([...addresseeData])
           });
         });
 
-        const command = arr.map((elem) => dbService.updateDb(elem.id, elem.addresseeData));
+        const command = arr.map((elem) =>
+          dbService.updateDb(elem.id, elem.addresseeData)
+        );
         const str = command.join('');
         myJSON = JSON.stringify([...myData]);
 
@@ -242,22 +242,22 @@ router.post('/api/send', async (req, res) => {
 
               id.forEach((l) => {
                 const addresseeNewData = newUsers.find(
-                  (user) => +user.id === +l,
+                  (user) => +user.id === +l
                 );
                 io.to('update').emit(
                   'addressee',
-                  JSON.stringify({ id: l, JSON: addresseeNewData.JSON }),
+                  JSON.stringify({ id: l, JSON: addresseeNewData.JSON })
                 );
               });
 
               io.to('update').emit(
                 'me',
-                JSON.stringify({ id: myId, JSON: myNewData.JSON }),
+                JSON.stringify({ id: myId, JSON: myNewData.JSON })
               );
             });
 
             return res.status(200).send('The message was sent!');
-          },
+          }
         );
       } else {
         // eslint-disable-next-line eqeqeq
@@ -272,9 +272,9 @@ router.post('/api/send', async (req, res) => {
                 state: 'untouched',
                 theme,
                 content,
-                md: false,
-              },
-            ],
+                md: false
+              }
+            ]
           });
         } else {
           if (!myData[i].sent) myData[i].sent = [];
@@ -283,7 +283,7 @@ router.post('/api/send', async (req, res) => {
             state: 'untouched',
             theme,
             content,
-            md: false,
+            md: false
           });
         }
 
@@ -296,9 +296,9 @@ router.post('/api/send', async (req, res) => {
                 state: 'untouched',
                 theme,
                 content,
-                md: false,
-              },
-            ],
+                md: false
+              }
+            ]
           });
         }
 
@@ -318,9 +318,9 @@ router.post('/api/send', async (req, res) => {
                 state: 'untouched',
                 theme,
                 content,
-                md: false,
-              },
-            ],
+                md: false
+              }
+            ]
           });
         } else {
           if (!addresseeData[idx].received) addresseeData[idx].received = [];
@@ -329,7 +329,7 @@ router.post('/api/send', async (req, res) => {
             state: 'untouched',
             theme,
             content,
-            md: false,
+            md: false
           });
         }
 
@@ -342,9 +342,9 @@ router.post('/api/send', async (req, res) => {
                 state: 'untouched',
                 theme,
                 content,
-                md: false,
-              },
-            ],
+                md: false
+              }
+            ]
           });
         }
 
@@ -363,21 +363,21 @@ router.post('/api/send', async (req, res) => {
 
               const myNewData = newUsers.find((user) => +user.id === +myId);
               const addresseeNewData = newUsers.find(
-                (user) => +user.id === +id,
+                (user) => +user.id === +id
               );
 
               io.to('update').emit(
                 'me',
-                JSON.stringify({ id: myId, JSON: myNewData.JSON }),
+                JSON.stringify({ id: myId, JSON: myNewData.JSON })
               );
               io.to('update').emit(
                 'addressee',
-                JSON.stringify({ id, JSON: addresseeNewData.JSON }),
+                JSON.stringify({ id, JSON: addresseeNewData.JSON })
               );
             });
 
             return res.status(200).send('The message was sent!');
-          },
+          }
         );
       }
     });
@@ -400,7 +400,7 @@ router.put('/api/touched', async (req, res) => {
 
           return res.status(200).json(targetUser.JSON);
         });
-      },
+      }
     );
   } catch (error) {
     res.status(400).send(error);
