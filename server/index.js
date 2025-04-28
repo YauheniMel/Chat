@@ -4,14 +4,13 @@ const socketIo = require('socket.io');
 const http = require('http');
 const { Router } = require('express');
 const path = require('path');
-const connection = require('./DB');
+const pool = require('./DB');
 const {
   createUser,
-  updateListUsers,
-  updateUsers,
-  updateDb,
   createUsersTable,
-  createMessagesTable
+  createMessagesTable,
+  findByName,
+  updateDb
 } = require('./DB/queries');
 const cors = require('cors');
 
@@ -19,7 +18,11 @@ const port = process.env.PORT || 5000;
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONT_URL
+  })
+);
 
 const server = http.createServer(app);
 
@@ -43,69 +46,21 @@ app.use(express.static(path.join(__dirname, '../build')));
 
 const router = Router();
 
-router.put('/api/login', async (req, res) => {
+router.post('/api/login', async (req, res) => {
   const { name } = req.body;
 
   try {
-    connection.query('SELECT * FROM users', (err, results) => {
-      if (err) throw new Error(err);
+    let [[user]] = await pool.query(findByName(name));
 
-      const users = Object.values(JSON.parse(JSON.stringify(results)));
+    if (!user) {
+      await pool.query(createUser(name));
 
-      const arr = [];
+      [[user]] = await pool.query(findByName(name));
+    }
 
-      // eslint-disable-next-line array-callback-return
-      users.forEach((user) => {
-        arr.push({ name: user.name, id: user.id });
-      });
-
-      let targetUser = users.find((user) => user.name === name);
-
-      if (!targetUser) {
-        const id = +new Date();
-        arr.push({ name, id });
-
-        connection.query(
-          `${createUser(name, id, JSON.stringify(arr))}${updateListUsers(
-            JSON.stringify(arr)
-          )} SELECT * FROM users`,
-          (error) => {
-            if (error) throw new Error(error);
-
-            connection.query('SELECT * FROM users', (e, r) => {
-              if (e) throw new Error(e);
-
-              const newUsers = Object.values(JSON.parse(JSON.stringify(r)));
-
-              targetUser = newUsers.find((user) => user.name === name);
-
-              io.to('update').emit('users', targetUser?.users);
-
-              return res.status(200).json(targetUser);
-            });
-          }
-        );
-      } else {
-        connection.query(
-          `${updateUsers(
-            targetUser.id,
-            JSON.stringify(arr)
-          )} SELECT * FROM users`,
-          (error, r) => {
-            if (error) throw new Error(error);
-
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            const users = Object.values(JSON.parse(JSON.stringify(r)));
-
-            targetUser = users[1].find((user) => user.name === name);
-
-            return res.status(200).json(targetUser);
-          }
-        );
-      }
-    });
-  } catch (err) {
-    res.status(400).send(err);
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
@@ -114,7 +69,7 @@ router.post('/api/send', async (req, res) => {
 
   try {
     // eslint-disable-next-line consistent-return
-    connection.query('SELECT * FROM users', (err, results) => {
+    pool.query('SELECT * FROM users', (err, results) => {
       if (err) throw new Error(err);
 
       const users = Object.values(JSON.parse(JSON.stringify(results)));
@@ -223,13 +178,13 @@ router.post('/api/send', async (req, res) => {
         const str = command.join('');
         myJSON = JSON.stringify([...myData]);
 
-        connection.query(
+        pool.query(
           `${str}
           ${updateDb(myId, myJSON)}`,
           (error) => {
             if (error) throw new Error(error);
 
-            connection.query('SELECT * FROM users', (e, r) => {
+            pool.query('SELECT * FROM users', (e, r) => {
               if (e) throw new Error(e);
 
               const newUsers = Object.values(JSON.parse(JSON.stringify(r)));
@@ -346,13 +301,13 @@ router.post('/api/send', async (req, res) => {
 
         addresseeJSON = JSON.stringify([...addresseeData]);
 
-        connection.query(
+        pool.query(
           `${updateDb(id, addresseeJSON)}
         ${updateDb(myId, myJSON)}`,
           (error) => {
             if (error) throw new Error(error);
 
-            connection.query('SELECT * FROM users', (e, r) => {
+            pool.query('SELECT * FROM users', (e, r) => {
               if (e) throw new Error(e);
 
               const newUsers = Object.values(JSON.parse(JSON.stringify(r)));
@@ -385,9 +340,9 @@ router.post('/api/send', async (req, res) => {
 router.put('/api/touched', async (req, res) => {
   const { JSON, id } = req.body;
   try {
-    connection.query(`${updateDb(id, JSON)} SELECT * FROM users`, (error) => {
+    pool.query(`${updateDb(id, JSON)} SELECT * FROM users`, (error) => {
       if (error) throw new Error(error);
-      connection.query('SELECT * FROM users', (e, r) => {
+      pool.query('SELECT * FROM users', (e, r) => {
         if (e) throw new Error(e);
 
         const targetUser = r.find((user) => +user.id === +id);
@@ -413,6 +368,6 @@ app.get('*', (req, res) => {
 });
 
 server.listen(port, () => {
-  connection.query(createUsersTable() + ' ' + createMessagesTable());
+  pool.query(createUsersTable() + ' ' + createMessagesTable());
   console.log(`running on port ${port}`);
 });

@@ -1,13 +1,14 @@
-module.exports.createUser = (name, id, users) => `INSERT INTO users (
+module.exports.findByName = (name) => `
+    SELECT * FROM users
+    WHERE (name = '${name}')
+`;
+
+module.exports.createUser = (name) => `INSERT INTO users (
   name,
-  JSON,
-  id,
-  users
+  state
 ) VALUES (
   '${name}',
-  '[]',
-  '${id}',
-  '${users}'
+  'online'
 );`;
 
 module.exports.updateDb = (id, JSON) => `
