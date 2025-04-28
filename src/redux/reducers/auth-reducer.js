@@ -1,8 +1,10 @@
 import { toast } from 'react-toastify';
 import { requestAPI } from '../../api';
 
-export const loginUserAction = () => ({ type: 'LOGIN-USER' });
-export const createNameAction = (name) => ({ type: 'CREATE-NAME', name });
+export const loginUserAction = (user) => ({
+  type: 'LOGIN-USER',
+  payload: user
+});
 export const getDataAction = (data) => ({ type: 'GET-DATA', data });
 
 const initState = {
@@ -16,20 +18,12 @@ const initState = {
 function authReducer(state = initState, action) {
   switch (action.type) {
     case 'LOGIN-USER': {
-      const stateCopy = {
+      return {
         ...state,
+        id: action.payload.id,
+        name: action.payload.name,
         isAuth: true
       };
-
-      return stateCopy;
-    }
-    case 'CREATE-NAME': {
-      const stateCopy = {
-        ...state,
-        name: action.name
-      };
-
-      return stateCopy;
     }
     case 'GET-DATA': {
       const stateCopy = {
@@ -44,20 +38,15 @@ function authReducer(state = initState, action) {
   }
 }
 
-export const loginUserThunk = (name) => (dispatch) =>
-  requestAPI
-    .login(name)
-    .then((data) => {
-      dispatch(
-        getDataAction({
-          id: data.id,
-          db: JSON.parse(data.JSON),
-          users: JSON.parse(data.users)
-        })
-      );
-      dispatch(loginUserAction());
-    })
-    .catch((err) => toast.error(err));
+export const loginUserThunk = (userName) => async (dispatch) => {
+  try {
+    const { name, id } = await requestAPI.login(userName);
+
+    dispatch(loginUserAction({ name, id }));
+  } catch (error) {
+    toast.error(error);
+  }
+};
 
 export const sendMessageThunk = (payload) => (dispatch) =>
   requestAPI
