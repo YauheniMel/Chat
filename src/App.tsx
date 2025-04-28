@@ -1,13 +1,15 @@
 import React, { FC, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
-import HomePageContainer from './pages/HomePage/HomePageContainer';
-import LoginPageContainer from './pages/LoginPage/LoginPageContainer';
 import 'react-toastify/dist/ReactToastify.css';
+import { LoginPage } from './pages/LoginPage/LoginPage';
+import { HomePage } from './pages/HomePage/HomePage';
 
-const App: FC<any> = ({ isAuth }) => {
+const App: FC = () => {
+  const isAuth = useSelector((state: any) => state.auth.isAuth);
+
   useEffect(() => {}, [isAuth]);
 
   const theme = createTheme({
@@ -22,6 +24,7 @@ const App: FC<any> = ({ isAuth }) => {
       }
     }
   });
+
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
@@ -32,15 +35,11 @@ const App: FC<any> = ({ isAuth }) => {
           />
           <Route
             path="login"
-            element={
-              isAuth ? <Navigate to="/" replace /> : <LoginPageContainer />
-            }
+            element={isAuth ? <Navigate to="/" replace /> : <LoginPage />}
           />
           <Route
             path="home"
-            element={
-              !isAuth ? <Navigate to="/" replace /> : <HomePageContainer />
-            }
+            element={!isAuth ? <Navigate to="/" replace /> : <HomePage />}
           />
         </Routes>
         <ToastContainer
@@ -60,8 +59,4 @@ const App: FC<any> = ({ isAuth }) => {
   );
 };
 
-const mapStateToProps = (state: any) => ({
-  isAuth: state.auth.isAuth
-});
-
-export default connect(mapStateToProps)(App);
+export default App;
