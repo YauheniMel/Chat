@@ -38,8 +38,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "node ./server/index.js",
-    "react": "react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "server": "nodemon ./server/index.js --prefix client",
     "eject": "react-scripts eject",
@@ -47,8 +46,7 @@
     "style": "stylelint **/*.{scss,css} -f verbose --fix",
     "prettier": "prettier --check \"{,!(node_modules)/**/}*.{tsx,ts,css,scss,md,js,jsx}\"",
     "format": "prettier --write \"{,!(node_modules)/**/}*.{tsx,ts,md,js,jsx}\" && eslint src/**/*.{tsx,ts,md,js,jsx} --fix",
-    "prepare": "husky install",
-    "heroku-postbuild": "npm run build --prod"
+    "prepare": "husky install"
   },
   "lint-staged": {
     "**/*.{tsx,ts,js,jsx}": "eslint --fix",

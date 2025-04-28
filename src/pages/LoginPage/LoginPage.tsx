@@ -1,17 +1,29 @@
-import * as React from 'react';
+import React, { ChangeEvent, FC, FormEvent, useState } from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import classes from './LoginPage.module.scss';
+import { useDispatch } from 'react-redux';
+import { loginUserThunk } from '../../redux/reducers/auth-reducer';
 
-const LoginPage: React.FC<any> = function ({ login, name, createName }) {
-  function handleSubmit(e: any) {
-    e.preventDefault();
+export const LoginPage: FC = () => {
+  const [name, setName] = useState('');
 
-    login(name);
-  }
+  const dispatch = useDispatch<any>();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    dispatch(loginUserThunk(name));
+  };
+
+  const createName = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+
+    setName(value);
+  };
 
   return (
     <div className={classes.wrapper}>
@@ -37,5 +49,3 @@ const LoginPage: React.FC<any> = function ({ login, name, createName }) {
     </div>
   );
 };
-
-export default LoginPage;
