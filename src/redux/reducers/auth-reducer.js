@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import requestAPI from '../../api/api';
+import { requestAPI } from '../../api';
 
 export const loginUserAction = () => ({ type: 'LOGIN-USER' });
 export const createNameAction = (name) => ({ type: 'CREATE-NAME', name });
