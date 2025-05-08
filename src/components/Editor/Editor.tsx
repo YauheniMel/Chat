@@ -1,46 +1,86 @@
-import React, { FC } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
-import { Button, TextField } from '@mui/material';
-import { toast } from 'react-toastify';
-import MultiSelect from '../MultiSelect/MultiSelect';
+import { Button, List, TextareaAutosize } from '@mui/material';
+import { ASelect } from '../ASelect/ASelect';
+import { useSelector } from 'react-redux';
+import { IEditor } from './type';
+import { IMessage } from '../../types';
+import { AMessage } from '../AMessage/AMessage';
+import { requestAPI } from '../../api';
 
-const Editor: FC<any> = function ({ sendMessage, users, id }) {
-  const [value, setValue] = React.useState<any>('');
+export const Editor: FC<IEditor> = ({ submit, alignment }) => {
+  const [content, setContent] = useState<any>('');
+  const [toId, setToId] = useState('');
+  const [messages, setMessages] = useState<IMessage[]>([]);
 
-  function handleSubmit(e: any) {
-    e.preventDefault();
-    if (!value.trim()) toast.error('Form invalid');
+  const users = useSelector((state: any) => state.users);
+  const id = useSelector((state: any) => state.id) as number;
 
-    const theme = e.target[2].value;
-    const selectUsers = e.target[0].value.split(',');
-    const ids: any[] = [];
-    users.forEach((user: any) => {
-      selectUsers.forEach((selectUser: any) => {
-        if (user.name === selectUser) {
-          ids.push(user.id);
-        }
-      });
+  useEffect(() => {
+    setContent('');
+  }, [alignment]);
+
+  useEffect(() => {
+    if (!toId || !id) return;
+
+    handleGetAllMessages(id, +toId);
+  }, [toId, id]);
+
+  const handleGetAllMessages = async (myId: number, userId: number) => {
+    const messages = await requestAPI.getMessages(myId, userId);
+
+    setMessages(messages);
+  };
+
+  const handleSetContent = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(event.target.value);
+  };
+
+  const handleSubmit = async (event: ChangeEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!content.trim()) return;
+
+    const message = await submit({
+      authorId: id,
+      toId: +toId,
+      content: content
     });
 
-    sendMessage({
-      myId: id,
-      id: ids,
-      theme,
-      content: value.replace(/\n/gim, '&')
-    });
-  }
+    setContent('');
+
+    setMessages((prevState) => [...prevState, message]);
+  };
 
   return (
     <div className="container">
-      <form style={{ padding: 20 }} action="" onSubmit={handleSubmit}>
-        <MultiSelect userName={users.map((user: any) => user.name)} />
-        <TextField
-          sx={{ margin: '0 0 20px 0', width: '100%' }}
-          required
-          label="Theme"
-          variant="standard"
-        />
-        <MDEditor value={value} onChange={setValue} />
+      <form
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          rowGap: '20px',
+          marginTop: '20px'
+        }}
+        action=""
+        onSubmit={handleSubmit}
+      >
+        <ASelect options={users} selected={toId} onSelect={setToId} />
+        {alignment === 'markdown' ? (
+          <MDEditor value={content} onChange={setContent} />
+        ) : (
+          <TextareaAutosize
+            aria-label="empty textarea"
+            placeholder="Message"
+            onChange={handleSetContent}
+            value={content}
+            style={{
+              resize: 'vertical',
+              minHeight: 100,
+              padding: 10
+            }}
+            required
+          />
+        )}
         <Button
           size="large"
           sx={{ p: 3, marginTop: '10px' }}
@@ -50,8 +90,23 @@ const Editor: FC<any> = function ({ sendMessage, users, id }) {
           Submit
         </Button>
       </form>
+      {toId && (
+        <List
+          sx={{
+            bgcolor: 'background.paper',
+            position: 'relative',
+            overflow: 'auto',
+            maxHeight: 200,
+            m: 1,
+            '& ul': { padding: 0 }
+          }}
+          subheader={<li />}
+        >
+          {messages.map((message) => (
+            <AMessage key={message.id} message={message} />
+          ))}
+        </List>
+      )}
     </div>
   );
 };
-
-export default Editor;

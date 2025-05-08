@@ -5,7 +5,10 @@ export const loginUserAction = (user) => ({
   type: 'LOGIN-USER',
   payload: user
 });
-export const getDataAction = (data) => ({ type: 'GET-DATA', data });
+export const getUsersAction = (users) => ({
+  type: 'GET-USERS',
+  payload: users
+});
 
 const initState = {
   isAuth: false,
@@ -15,7 +18,7 @@ const initState = {
   users: []
 };
 
-function authReducer(state = initState, action) {
+export const reducer = (state = initState, action) => {
   switch (action.type) {
     case 'LOGIN-USER': {
       return {
@@ -25,18 +28,16 @@ function authReducer(state = initState, action) {
         isAuth: true
       };
     }
-    case 'GET-DATA': {
-      const stateCopy = {
+    case 'GET-USERS': {
+      return {
         ...state,
-        ...action.data
+        users: action.payload.filter((user) => user.id !== state.id)
       };
-
-      return stateCopy;
     }
     default:
       return state;
   }
-}
+};
 
 export const loginUserThunk = (userName) => async (dispatch) => {
   try {
@@ -48,30 +49,23 @@ export const loginUserThunk = (userName) => async (dispatch) => {
   }
 };
 
-export const sendMessageThunk = (payload) => (dispatch) =>
-  requestAPI
-    .sendMessage(payload)
-    .then((data) => {
-      if (typeof data === 'object') {
-        dispatch(
-          getDataAction({ id: payload.myId, db: JSON.parse(data.JSON) })
-        );
-        dispatch(loginUserAction());
-      } else {
-        toast.success(data);
-      }
-    })
-    .catch((err) => toast.error(err));
+export const getUsersThunk = () => async (dispatch) => {
+  try {
+    const users = await requestAPI.getUsers();
+
+    dispatch(getUsersAction(users));
+  } catch (error) {
+    toast.error(error);
+  }
+};
 
 export const setTouchedMsgThunk = (payload) => () =>
   requestAPI
     .sendTouchedMsg(payload)
     .then((data) => {
       const [newData] = JSON.parse(data);
-      getDataAction({
+      getUsersAction({
         db: newData
       });
     })
     .catch((err) => toast.error(err));
-
-export default authReducer;

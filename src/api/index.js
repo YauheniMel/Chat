@@ -7,8 +7,21 @@ export const requestAPI = {
     axiosInstance
       .post('/api/login', { name })
       .then((response) => response.data),
-  sendMessage: (data) =>
-    axiosInstance.post('/api/send', data).then((response) => response.data),
+  getUsers: () =>
+    axiosInstance.get('/api/users').then((response) => response.data),
+  getMessages: (myId, userId) =>
+    axiosInstance
+      .get('/api/messages', {
+        params: {
+          myId,
+          userId
+        }
+      })
+      .then((response) => response.data),
+  sendMessage: (message) =>
+    axiosInstance
+      .post('/api/send', { message })
+      .then((response) => response.data),
   sendTouchedMsg: (data) =>
     axiosInstance.put('/api/touched', data).then((response) => response.data)
 };

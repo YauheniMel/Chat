@@ -8,7 +8,7 @@ import { LoginPage } from './pages/LoginPage/LoginPage';
 import { HomePage } from './pages/HomePage/HomePage';
 
 const App: FC = () => {
-  const isAuth = useSelector((state: any) => state.auth.isAuth);
+  const isAuth = useSelector((state: any) => state.isAuth);
 
   useEffect(() => {}, [isAuth]);
 

@@ -6,7 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import classes from './LoginPage.module.scss';
 import { useDispatch } from 'react-redux';
-import { loginUserThunk } from '../../redux/reducers/auth-reducer';
+import { loginUserThunk } from '../../redux/reducers';
 
 export const LoginPage: FC = () => {
   const [name, setName] = useState('');
