@@ -1,76 +1,51 @@
-import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Stack, Toolbar, Typography } from '@mui/material';
 import React, { FC, useEffect, useState } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import classes from './HomePage.module.scss';
-import DialogModal from '../../components/DialogModal/DialogModal';
 import NavMessages from '../../components/BoxMessage/NavMessage';
-import Editor from '../../components/Editor/Editor';
+import { Editor } from '../../components/Editor/Editor';
 import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
-import {
-  getDataAction,
-  sendMessageThunk,
-  setTouchedMsgThunk
-} from '../../redux/reducers/auth-reducer';
+import { getUsersThunk, setTouchedMsgThunk } from '../../redux/reducers';
+import { CreateMessageDto, IMessage } from '../../types';
+import { requestAPI } from '../../api';
+import { AlignmentType } from '../../components/Editor/type';
 
 export const HomePage: FC = () => {
-  const [newData, setNewData] = useState(null);
-  const [newUsers, setNewUsers] = useState(null);
-
-  const [alignment, setAlignment] = React.useState('text');
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [alignment, setAlignment] = useState<AlignmentType>('textarea');
 
   const dispatch = useDispatch<any>();
 
-  const users = useSelector((state: any) => state.auth.users);
-  const data = useSelector((state: any) => state.auth.db);
-  const name = useSelector((state: any) => state.auth.name);
-  const id = useSelector((state: any) => state.auth.id);
+  const users = useSelector((state: any) => state.users);
+  const data = useSelector((state: any) => state.db);
+  const name = useSelector((state: any) => state.name);
+  const id = useSelector((state: any) => state.id);
 
-  const socket = io('https://chatting-back.onrender.com');
-
-  useEffect(() => {
-    socket.on('db', (d: any) => setNewData(d));
-
-    socket.on('me', (d: any) => {
-      const { id: resId, JSON: json } = JSON.parse(d);
-
-      if (+resId === +id) {
-        setNewData(json);
-      }
-    });
-
-    socket.on('addressee', (d: any) => {
-      const { id: resId, JSON: json } = JSON.parse(d);
-
-      if (+resId === +id) {
-        setNewData(json);
-      }
-    });
-    if (newData) {
-      dispatch(getDataAction({ db: JSON.parse(newData) }));
-    }
-  }, [newData]);
+  const socket = io(process.env.REACT_APP_BASE_URL);
 
   useEffect(() => {
-    socket.on('users', (d: any) => setNewUsers(d));
+    socket.on('on-send-message', (message: any) => {
+      console.log(message);
+    });
 
-    if (newUsers) {
-      dispatch(getDataAction({ users: JSON.parse(newUsers) }));
-    }
-  }, [newUsers]);
+    dispatch(getUsersThunk());
+  }, []);
 
   const handleChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newAlignment: string
+    _: React.MouseEvent<HTMLElement>,
+    newAlignment: AlignmentType
   ) => {
+    if (!newAlignment) return;
+
     setAlignment(newAlignment);
   };
 
-  const sendMessage = (data: any) => {
-    dispatch(sendMessageThunk(data));
+  const sendMessage = async (message: CreateMessageDto): Promise<IMessage> => {
+    const response = await requestAPI.sendMessage(message);
+
+    return response;
   };
 
   const setTouchedMsg = (data: any) => {
@@ -113,10 +88,6 @@ export const HomePage: FC = () => {
     });
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
-
   return (
     <div>
       <AppBar position="static">
@@ -125,18 +96,20 @@ export const HomePage: FC = () => {
             <Typography variant="h6" noWrap>
               {name}
             </Typography>
-            <ToggleButtonGroup
-              color="secondary"
-              value={alignment}
-              sx={{ backgroundColor: '#62727b' }}
-              exclusive
-              onChange={handleChange}
-            >
-              <ToggleButton value="text">Markdown</ToggleButton>
-            </ToggleButtonGroup>
-            <IconButton size="large" onClick={() => setIsOpen(true)}>
-              <ForwardToInboxIcon color="secondary" sx={{ fontSize: 30 }} />
-            </IconButton>
+            <Stack direction="row" spacing={4}>
+              <ToggleButtonGroup
+                color="secondary"
+                value={alignment}
+                sx={{ backgroundColor: '#62727b' }}
+                exclusive
+                onChange={handleChange}
+              >
+                <ToggleButton value="markdown">Markdown</ToggleButton>
+                <ToggleButton value="textarea">
+                  <ForwardToInboxIcon sx={{ fontSize: 30 }} />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
           </div>
           <div>
             <div>
@@ -149,18 +122,8 @@ export const HomePage: FC = () => {
             </div>
           </div>
         </Toolbar>
-        <DialogModal
-          id={id}
-          data={data}
-          users={users}
-          isOpen={isOpen}
-          close={handleClose}
-          sendMessage={sendMessage}
-        />
       </AppBar>
-      {alignment === 'text' || (
-        <Editor sendMessage={sendMessage} id={id} users={users} />
-      )}
+      <Editor submit={sendMessage} alignment={alignment} />
     </div>
   );
 };
